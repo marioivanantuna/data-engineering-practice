@@ -16,24 +16,35 @@ WITH total_por_cliente AS (
         c.nombre
 ),
 
-clientes_segmentados AS (
+total_ajustado_cliente AS (
     SELECT
         id_cliente,
         nombre,
         total_comprado,
         CASE
-            WHEN total_comprado >= 20000 THEN 'Alto valor'
-            WHEN total_comprado >= 15000 THEN 'Valor medio'
-            ELSE 'Valor bajo'
-        END AS segmento
+            WHEN nombre IN ('Ana Lopez', 'Sofia Martinez') THEN 22000
+            ELSE total_comprado
+        END AS total_ajustado
     FROM total_por_cliente
 )
 
 SELECT
-    ROW_NUMBER() OVER (ORDER BY total_comprado DESC) AS posicion,
     id_cliente,
     nombre,
     total_comprado,
-    segmento
-FROM clientes_segmentados
-ORDER BY total_comprado DESC;
+    total_ajustado,
+
+    ROW_NUMBER() OVER (
+        ORDER BY total_ajustado DESC
+    ) AS row_number_posicion,
+
+    RANK() OVER (
+        ORDER BY total_ajustado DESC
+    ) AS rank_posicion,
+
+    DENSE_RANK() OVER (
+        ORDER BY total_ajustado DESC
+    ) AS dense_rank_posicion
+
+FROM total_ajustado_cliente
+ORDER BY total_ajustado DESC;
